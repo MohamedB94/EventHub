@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from dotenv import load_dotenv
+import bcrypt
+import hashlib
+import base64
 import os
 
 load_dotenv()
@@ -11,13 +13,15 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def _prehash(password: str) -> bytes:
+    # SHA-256 avant bcrypt pour éviter la limite de 72 octets
+    return base64.b64encode(hashlib.sha256(password.encode()).digest())
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(_prehash(password), bcrypt.gensalt()).decode()
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(_prehash(plain), hashed.encode())
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()

@@ -11,13 +11,14 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const isRefreshCall = original.url?.includes("/auth/refresh");
+    if (error.response?.status === 401 && !original._retry && !isRefreshCall) {
       original._retry = true;
       try {
         await api.post("/auth/refresh");
         return api(original);
       } catch {
-        window.location.href = "/login";
+        window.location.href = "/connexion";
       }
     }
     return Promise.reject(error);

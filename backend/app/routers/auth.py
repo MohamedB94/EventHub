@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from app.database import get_db
 from app.models.user import Utilisateur
 from app.models.refresh_token import RefreshToken
-from app.schemas.user import UserRegister, UserLogin, UserResponse
+from app.schemas.user import InscriptionUser as UserRegister, ConnexionUser as UserLogin, ReponseUser as UserResponse
 from app.core.security import (
     hash_password, verify_password,
     create_access_token, create_refresh_token, decode_token

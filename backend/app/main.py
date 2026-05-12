@@ -3,8 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.routers import auth
 
-# Importer les modèles pour que SQLAlchemy crée les tables
-from app.models import user, refresh_token  # ← ajouter refresh_token
+from app.models import user, refresh_token
 
 Base.metadata.create_all(bind=engine)
 
