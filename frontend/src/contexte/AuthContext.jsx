@@ -9,10 +9,20 @@ export const AuthProvider = ({ children }) => {
 
   // Au démarrage on vérifie si l'utilisateur est connecté via /me
   useEffect(() => {
-    api.get("/auth/me")
-      .then((res) => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    const checkAuth = async () => {
+      try {
+        const res = await api.get("/auth/me");
+        setUser(res.data);
+      } catch (error) {
+        // Si 401 et on n'a jamais essayé de refresh, c'est normal (pas connecté)
+        // L'interceptor se chargera du refresh si nécessaire
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (email, mot_de_passe) => {
