@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.routers import auth
 
-from app.models import user, refresh_token
+from app.models import user, refresh_token, bruteforce
 
 Base.metadata.create_all(bind=engine)
 

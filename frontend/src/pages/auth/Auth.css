@@ -256,6 +256,28 @@ body {
   box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
 }
 
+.password-input-wrapper input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #7c8597;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.password-toggle:hover {
+  color: #4f43df;
+}
+
 .field-group.has-error .input-wrapper input {
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.1);

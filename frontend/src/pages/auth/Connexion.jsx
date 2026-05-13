@@ -11,6 +11,34 @@ export default function Connexion() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const getErrorMessage = (err) => {
+    const detail = err?.response?.data?.detail;
+    if (!detail) return "Une erreur est survenue";
+
+    if (typeof detail === "string") return detail;
+
+    if (Array.isArray(detail)) {
+      const messages = detail
+        .map((item) => item?.msg)
+        .filter(Boolean)
+        .join(" | ");
+      return messages || "Une erreur est survenue";
+    }
+
+    if (typeof detail === "object") {
+      if (detail.message) {
+        if (detail.retry_after) {
+          return `${detail.message} (Reessayez dans ${detail.retry_after}s)`;
+        }
+        return detail.message;
+      }
+      return "Une erreur est survenue";
+    }
+
+    return "Une erreur est survenue";
+  };
 
   const validate = () => {
     const errs = {};
@@ -42,7 +70,7 @@ export default function Connexion() {
       else if (user.role === "admin") navigate("/admin");
       else navigate("/");
     } catch (err) {
-      setServerError(err.response?.data?.detail || "Une erreur est survenue");
+      setServerError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -97,15 +125,27 @@ export default function Connexion() {
               className={`field-group ${errors.mot_de_passe ? "has-error" : ""}`}
             >
               <label>Mot de passe</label>
-              <div className='input-wrapper'>
+              <div className='input-wrapper password-input-wrapper'>
                 <input
-                  type='password'
+                  type={showPassword ? "text" : "password"}
                   name='mot_de_passe'
                   placeholder='••••••••••••••'
                   value={form.mot_de_passe}
                   onChange={handleChange}
                   autoComplete='current-password'
                 />
+                <button
+                  type='button'
+                  className='password-toggle'
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword
+                      ? "Masquer le mot de passe"
+                      : "Afficher le mot de passe"
+                  }
+                >
+                  {showPassword ? "🙈" : "👁"}
+                </button>
               </div>
               {errors.mot_de_passe && (
                 <span className='field-error'>{errors.mot_de_passe}</span>

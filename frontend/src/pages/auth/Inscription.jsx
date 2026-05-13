@@ -18,6 +18,35 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const getErrorMessage = (err) => {
+    const detail = err?.response?.data?.detail;
+    if (!detail) return "Une erreur est survenue";
+
+    if (typeof detail === "string") return detail;
+
+    if (Array.isArray(detail)) {
+      const messages = detail
+        .map((item) => item?.msg)
+        .filter(Boolean)
+        .join(" | ");
+      return messages || "Une erreur est survenue";
+    }
+
+    if (typeof detail === "object") {
+      if (detail.message) {
+        if (detail.retry_after) {
+          return `${detail.message} (Reessayez dans ${detail.retry_after}s)`;
+        }
+        return detail.message;
+      }
+      return "Une erreur est survenue";
+    }
+
+    return "Une erreur est survenue";
+  };
 
   const validate = () => {
     const errs = {};
@@ -66,7 +95,7 @@ export default function Register() {
       if (user.role === "organisateur") navigate("/organisateur");
       else navigate("/");
     } catch (err) {
-      setServerError(err.response?.data?.detail || "Une erreur est survenue");
+      setServerError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -186,15 +215,27 @@ export default function Register() {
               className={`field-group ${errors.mot_de_passe ? "has-error" : ""}`}
             >
               <label>Mot de passe</label>
-              <div className='input-wrapper'>
+              <div className='input-wrapper password-input-wrapper'>
                 <span className='input-icon'>⚿</span>
                 <input
-                  type='password'
+                  type={showPassword ? "text" : "password"}
                   name='mot_de_passe'
                   placeholder='Min. 8 caractères, 1 majuscule, 1 chiffre'
                   value={form.mot_de_passe}
                   onChange={handleChange}
                 />
+                <button
+                  type='button'
+                  className='password-toggle'
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword
+                      ? "Masquer le mot de passe"
+                      : "Afficher le mot de passe"
+                  }
+                >
+                  {showPassword ? "🙈" : "👁"}
+                </button>
               </div>
               {strength && (
                 <div className='password-strength'>
@@ -213,15 +254,27 @@ export default function Register() {
               className={`field-group ${errors.confirmer_passe ? "has-error" : ""}`}
             >
               <label>Confirmer le mot de passe</label>
-              <div className='input-wrapper'>
+              <div className='input-wrapper password-input-wrapper'>
                 <span className='input-icon'>⚿</span>
                 <input
-                  type='password'
+                  type={showConfirmPassword ? "text" : "password"}
                   name='confirmer_passe'
                   placeholder='••••••••'
                   value={form.confirmer_passe}
                   onChange={handleChange}
                 />
+                <button
+                  type='button'
+                  className='password-toggle'
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={
+                    showConfirmPassword
+                      ? "Masquer la confirmation du mot de passe"
+                      : "Afficher la confirmation du mot de passe"
+                  }
+                >
+                  {showConfirmPassword ? "🙈" : "👁"}
+                </button>
               </div>
               {errors.confirmer_passe && (
                 <span className='field-error'>{errors.confirmer_passe}</span>
