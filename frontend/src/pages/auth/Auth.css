@@ -157,6 +157,26 @@ body {
   animation: slideUp 0.4s ease;
 }
 
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: #5a4de8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auth-back-link:hover {
+  text-decoration: underline;
+}
+
+.auth-back-link span {
+  font-size: 16px;
+  line-height: 1;
+}
+
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -515,6 +535,10 @@ body {
 .auth-login .auth-card {
   max-width: 440px;
   margin-top: 50px;
+}
+
+.auth-login .auth-back-link {
+  color: #4f43df;
 }
 
 .auth-login .auth-card-header {

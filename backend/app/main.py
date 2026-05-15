@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import auth
+from app.routers import auth, event, admin
 
 from app.models import user, refresh_token, bruteforce
 
@@ -18,3 +18,5 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(event.router)
+app.include_router(admin.router)

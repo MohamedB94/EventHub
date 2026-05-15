@@ -54,8 +54,7 @@ class ReponseUser(BaseModel):
     class Config:
         from_attributes = True
 
-class ReponseToken(BaseModel):
+class ReponseAuth(BaseModel):
     access_token: str
-    refresh_token: str
     token_type: str = "bearer"
     user: ReponseUser

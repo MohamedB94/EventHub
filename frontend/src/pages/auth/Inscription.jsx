@@ -144,6 +144,14 @@ export default function Register() {
 
       <div className='auth-right'>
         <div className='auth-card'>
+          <Link
+            to='/'
+            className='auth-back-link'
+            aria-label="Retour a l'accueil"
+          >
+            <span aria-hidden='true'>&larr;</span> Retour a l'accueil
+          </Link>
+
           <div className='auth-card-header'>
             <h2>Créer un compte</h2>
             <p>C'est gratuit et rapide ✨</p>

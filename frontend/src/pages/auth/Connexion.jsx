@@ -1,11 +1,18 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexte/AuthContext";
 import "./Auth.css";
 
 export default function Connexion() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
+
+  const isAdminRole = (role) => {
+    const normalized = String(role || "")
+      .trim()
+      .toLowerCase();
+    return normalized === "admin" || normalized === "administrateur";
+  };
 
   const [form, setForm] = useState({ email: "", mot_de_passe: "" });
   const [errors, setErrors] = useState({});
@@ -66,8 +73,13 @@ export default function Connexion() {
     setLoading(true);
     try {
       const user = await login(form.email, form.mot_de_passe);
+      if (isAdminRole(user.role)) {
+        await logout();
+        setServerError("Compte admin detecte. Utilisez /admin_login.");
+        return;
+      }
+
       if (user.role === "organisateur") navigate("/organisateur");
-      else if (user.role === "admin") navigate("/admin");
       else navigate("/");
     } catch (err) {
       setServerError(getErrorMessage(err));
@@ -92,6 +104,14 @@ export default function Connexion() {
 
       <div className='auth-right'>
         <div className='auth-card'>
+          <Link
+            to='/'
+            className='auth-back-link'
+            aria-label="Retour a l'accueil"
+          >
+            <span aria-hidden='true'>&larr;</span> Retour a l'accueil
+          </Link>
+
           <div className='auth-card-header'>
             <h2>Bon retour !</h2>
             <p>Connectez-vous à votre compte</p>
