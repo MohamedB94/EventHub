@@ -28,7 +28,7 @@ class InscriptionUser(BaseModel):
             raise ValueError("Le mot de passe doit contenir au moins une lettre majuscule")
         if not re.search(r"[0-9]", v):
             raise ValueError("Le mot de passe doit contenir au moins un chiffre")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
+        if not re.search(r"[^a-zA-Z0-9]", v):
             raise ValueError("Le mot de passe doit contenir au moins un caractère spécial")
         return v
     

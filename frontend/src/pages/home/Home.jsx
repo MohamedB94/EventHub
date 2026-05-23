@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexte/AuthContext";
 import "./Home.css";
@@ -44,17 +45,25 @@ const events = [
 
 export default function Home() {
   const { user, logout } = useAuth();
+  const [activeCategory, setActiveCategory] = useState("Tous");
+  const [search, setSearch] = useState("");
   const fullName = [user?.prenom, user?.nom].filter(Boolean).join(" ").trim();
+
+  const filteredEvents = events.filter((e) => {
+    const matchCategory = activeCategory === "Tous" || e.category === activeCategory;
+    const matchSearch = e.title.toLowerCase().includes(search.toLowerCase().trim());
+    return matchCategory && matchSearch;
+  });
 
   return (
     <div className='home-page'>
       <header className='hero'>
         <nav className='hero-nav'>
-          <div className='brand'>EventHub</div>
+          <Link to='/' className='brand'>EventHub</Link>
 
           <div className='hero-links'>
             <a href='#events'>Evenements</a>
-            <a href='#events'>Organisateurs</a>
+            <Link to='/organisateurs'>Organisateurs</Link>
             <a href='#footer'>A propos</a>
           </div>
 
@@ -69,7 +78,7 @@ export default function Home() {
                   className='btn-nav btn-nav-logout'
                   onClick={logout}
                 >
-                  Deconnecter
+                  Se Déconnecter
                 </button>
               </>
             ) : (
@@ -89,7 +98,12 @@ export default function Home() {
           <h1>Decouvrez des evenements pres de chez vous</h1>
           <p>Des milliers d'evenements vous attendent...</p>
           <div className='search-wrap'>
-            <input type='text' placeholder='Rechercher un evenement...' />
+            <input
+              type='text'
+              placeholder='Rechercher un evenement...'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
       </header>
@@ -100,7 +114,8 @@ export default function Home() {
             <button
               type='button'
               key={category}
-              className={`category-pill ${category === "Tous" ? "active" : ""}`}
+              className={`category-pill ${activeCategory === category ? "active" : ""}`}
+              onClick={() => setActiveCategory(category)}
             >
               {category}
             </button>
@@ -110,18 +125,22 @@ export default function Home() {
         <h2>Evenements a la une</h2>
 
         <div className='event-grid'>
-          {events.map((event) => (
-            <article className='event-card' key={event.id}>
-              <div className='event-image' />
-              <p className='event-date'>{event.date}</p>
-              <h3>{event.title}</h3>
-              <span className='event-tag'>{event.category}</span>
-              <p className='event-price'>{event.price}</p>
-              <button type='button' className='reserve-btn'>
-                reserver
-              </button>
-            </article>
-          ))}
+          {filteredEvents.length === 0 ? (
+            <p className='no-events'>Aucun événement trouvé.</p>
+          ) : (
+            filteredEvents.map((event) => (
+              <article className='event-card' key={event.id}>
+                <div className='event-image' />
+                <p className='event-date'>{event.date}</p>
+                <h3>{event.title}</h3>
+                <span className='event-tag'>{event.category}</span>
+                <p className='event-price'>{event.price}</p>
+                <button type='button' className='reserve-btn'>
+                  reserver
+                </button>
+              </article>
+            ))
+          )}
         </div>
       </main>
 

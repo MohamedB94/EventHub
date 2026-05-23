@@ -1,0 +1,156 @@
+.org-list-page {
+  min-height: 100vh;
+  background: #f4f5f7;
+  color: #1f2633;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.org-list-header {
+  background: linear-gradient(180deg, #5a52e5 0%, #4f47dc 100%);
+  color: #fff;
+  padding-bottom: 48px;
+}
+
+.org-list-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+}
+
+.org-list-nav .brand {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
+.org-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.org-list-hero-content {
+  text-align: center;
+  padding: 32px 24px 0;
+}
+
+.org-list-hero-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.org-list-hero-content p {
+  font-size: 16px;
+  opacity: 0.85;
+  margin: 0;
+}
+
+.org-list-main {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 48px auto;
+  padding: 0 24px;
+}
+
+.org-list-status {
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+  padding: 48px 0;
+}
+
+.org-list-error {
+  color: #dc2626;
+}
+
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.org-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.org-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #5a52e5;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.org-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.org-events-count {
+  background: #ede9fe;
+  color: #5a52e5;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+.org-since {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* réutilisation des classes nav depuis Home */
+.btn-nav {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-nav-outline {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+}
+
+.btn-nav-solid {
+  background: #fff;
+  color: #5a52e5;
+}
+
+.btn-nav-logout {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.welcome-user {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
