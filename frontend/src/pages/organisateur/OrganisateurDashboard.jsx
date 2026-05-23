@@ -138,6 +138,7 @@ export default function OrganisateurDashboard() {
       date_fin: data.date_fin,
       lieu: data.lieu,
       capacite_max: parseInt(data.capacite, 10),
+      categorie: data.categorie || null,
       statut: publish,
     };
     try {
@@ -409,7 +410,7 @@ export default function OrganisateurDashboard() {
                 </div>
                 <div className='org-field'>
                   <label htmlFor='categorie'>Categorie</label>
-                  <select id='categorie' name='categorie' defaultValue='Musique'>
+                  <select id='categorie' name='categorie' defaultValue={editingEvent?.categorie ?? "Musique"}>
                     <option>Musique</option>
                     <option>Conference</option>
                     <option>Atelier</option>

@@ -13,6 +13,7 @@ class Evenement(Base):
     date_fin = Column(DateTime, nullable=False)
     lieu = Column(String(50), nullable=False)
     capacite_max = Column(Integer, nullable=False)
+    categorie = Column(String(50), nullable=True)
     statut = Column(Boolean, default=False)
     date_creation = Column(DateTime, default=datetime.utcnow)
     id_utilisateur = Column(Integer, ForeignKey("utilisateur.id_utilisateur"), nullable=False)

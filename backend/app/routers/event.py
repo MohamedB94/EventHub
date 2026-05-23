@@ -27,6 +27,50 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> Utilisa
     return user
 
 
+@router.get("/public", response_model=list[EventResponse])
+def list_public_events(db: Session = Depends(get_db)):
+    return (
+        db.query(Evenement)
+        .filter(Evenement.statut == True)
+        .order_by(Evenement.date_debut.asc())
+        .all()
+    )
+
+
+@router.get("/public/{event_id}")
+def get_public_event(event_id: int, db: Session = Depends(get_db)):
+    from app.models.billet import Billet
+    event = db.query(Evenement).filter(
+        Evenement.id_evenement == event_id,
+        Evenement.statut == True,
+    ).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Evenement introuvable")
+    billets = db.query(Billet).filter(Billet.id_evenement == event_id).all()
+    return {
+        "id_evenement": event.id_evenement,
+        "titre": event.titre,
+        "description": event.description,
+        "date_debut": event.date_debut,
+        "date_fin": event.date_fin,
+        "lieu": event.lieu,
+        "capacite_max": event.capacite_max,
+        "categorie": event.categorie,
+        "statut": event.statut,
+        "date_creation": event.date_creation,
+        "billets": [
+            {
+                "id_billet": b.id_billet,
+                "type": b.type,
+                "prix": float(b.prix),
+                "quantite_disponible": b.quantite_disponible,
+                "dat_limite_vente": b.dat_limite_vente,
+            }
+            for b in billets
+        ],
+    }
+
+
 @router.get("/mine", response_model=list[EventResponse])
 def list_my_events(
     db: Session = Depends(get_db),
@@ -60,6 +104,7 @@ def create_event(
         date_fin=event.date_fin,
         lieu=event.lieu,
         capacite_max=event.capacite_max,
+        categorie=event.categorie,
         statut=event.statut,
         date_creation=datetime.utcnow(),
         id_utilisateur=user.id_utilisateur

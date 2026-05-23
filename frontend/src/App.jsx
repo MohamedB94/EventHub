@@ -7,6 +7,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Home from "./pages/home/Home";
 import OrganisateurDashboard from "./pages/organisateur/OrganisateurDashboard";
 import OrganisateursList from "./pages/organisateurs/OrganisateursList";
+import EventDetail from "./pages/evenement/EventDetail";
 import { useAuth } from "./contexte/AuthContext";
 
 function RedirectToHome() {
@@ -31,6 +32,7 @@ export default function App() {
           <Route path='/admin' element={<AdminDashboard />} />
           <Route path='/organisateur' element={<OrganisateurDashboard />} />
           <Route path='/organisateurs' element={<OrganisateursList />} />
+          <Route path='/evenements/:id' element={<EventDetail />} />
           <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>
       </AuthProvider>

@@ -1,0 +1,297 @@
+.event-detail-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #17181d 0%, #14151a 100%);
+  color: #f4f4f6;
+}
+
+.event-detail-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-detail-nav .brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
+.event-back-link {
+  color: #aab0c0;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.event-back-link:hover {
+  color: #fff;
+}
+
+.event-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.event-detail-hero {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.event-detail-image {
+  width: 100%;
+  height: 320px;
+  background: linear-gradient(135deg, #2a2d3a 0%, #1e2130 100%);
+  border-radius: 12px;
+}
+
+.event-detail-body {
+  padding: 0;
+}
+
+.event-detail-tag {
+  display: inline-block;
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.event-detail-body h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 24px;
+  line-height: 1.2;
+}
+
+.event-detail-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.event-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.event-meta-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+.event-meta-item span:last-child {
+  font-size: 14px;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.event-detail-description h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #f4f4f6;
+}
+
+.event-detail-description p {
+  color: #aab0c0;
+  line-height: 1.7;
+  font-size: 15px;
+  white-space: pre-wrap;
+}
+
+.event-detail-sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+}
+
+.event-sidebar-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.event-sidebar-price {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-price-free {
+  font-size: 28px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.event-price-from {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.event-price-amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.event-billets-section h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  color: #e2e8f0;
+}
+
+.event-no-billets {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.event-billets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-billet-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.event-billet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.event-billet-info strong {
+  font-size: 15px;
+  color: #f4f4f6;
+}
+
+.event-billet-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #a5b4fc;
+}
+
+.event-billet-qty {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.event-billet-limit {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.event-reserve-btn {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.event-reserve-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.event-reserve-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.event-billet-success {
+  display: block;
+  text-align: center;
+  color: #4ade80;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px;
+}
+
+.event-billet-error {
+  font-size: 12px;
+  color: #f87171;
+  margin-top: 6px;
+}
+
+.event-login-hint {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.event-login-hint a {
+  color: #a5b4fc;
+  text-decoration: none;
+}
+
+.event-detail-loading,
+.event-detail-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: #aab0c0;
+}
+
+@media (max-width: 768px) {
+  .event-detail-layout {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .event-detail-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .event-detail-body h1 {
+    font-size: 24px;
+  }
+
+  .event-detail-sidebar {
+    position: static;
+  }
+
+  .event-detail-nav {
+    padding: 14px 16px;
+  }
+}

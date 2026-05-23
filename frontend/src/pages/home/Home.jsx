@@ -1,60 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexte/AuthContext";
+import api from "../../services/api";
 import "./Home.css";
 
-const categories = [
-  "Tous",
-  "Musique",
-  "Conferences",
-  "Ateliers",
-  "Art",
-  "Sport",
-];
-
-const events = [
-  {
-    id: 1,
-    title: "Festival Jazz en Seine",
-    date: "Sam 19 avr. - Paris",
-    category: "Musique",
-    price: "29 EUR",
-  },
-  {
-    id: 2,
-    title: "Festival Jazz en Seine",
-    date: "Sam 19 avr. - Paris",
-    category: "Musique",
-    price: "29 EUR",
-  },
-  {
-    id: 3,
-    title: "Festival Jazz en Seine",
-    date: "Sam 19 avr. - Paris",
-    category: "Musique",
-    price: "29 EUR",
-  },
-  {
-    id: 4,
-    title: "Festival Jazz en Seine",
-    date: "Sam 19 avr. - Paris",
-    category: "Musique",
-    price: "29 EUR",
-  },
-];
+const categories = ["Tous", "Musique", "Conferences", "Ateliers", "Art", "Sport"];
 
 const VISIBLE = 4;
+
+const formatDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+};
 
 export default function Home() {
   const { user, logout } = useAuth();
   const [activeCategory, setActiveCategory] = useState("Tous");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
   const fullName = [user?.prenom, user?.nom].filter(Boolean).join(" ").trim();
 
+  useEffect(() => {
+    api.get("/events/public")
+      .then((res) => setEvents(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setEvents([]))
+      .finally(() => setEventsLoading(false));
+  }, []);
+
   const filteredEvents = events.filter((e) => {
-    const matchCategory = activeCategory === "Tous" || e.category === activeCategory;
-    const matchSearch = e.title.toLowerCase().includes(search.toLowerCase().trim());
+    const matchCategory =
+      activeCategory === "Tous" ||
+      (e.categorie || "").toLowerCase() === activeCategory.toLowerCase();
+    const matchSearch = (e.titre || "").toLowerCase().includes(search.toLowerCase().trim());
     return matchCategory && matchSearch;
   });
 
@@ -94,22 +75,14 @@ export default function Home() {
                     Mon espace
                   </Link>
                 )}
-                <button
-                  type='button'
-                  className='btn-nav btn-nav-logout'
-                  onClick={logout}
-                >
+                <button type='button' className='btn-nav btn-nav-logout' onClick={logout}>
                   Se Déconnecter
                 </button>
               </>
             ) : (
               <>
-                <Link to='/connexion' className='btn-nav btn-nav-outline'>
-                  Connexion
-                </Link>
-                <Link to='/inscription' className='btn-nav btn-nav-solid'>
-                  Inscription
-                </Link>
+                <Link to='/connexion' className='btn-nav btn-nav-outline'>Connexion</Link>
+                <Link to='/inscription' className='btn-nav btn-nav-solid'>Inscription</Link>
               </>
             )}
           </div>
@@ -171,20 +144,28 @@ export default function Home() {
         </div>
 
         <div className='event-grid'>
-          {filteredEvents.length === 0 ? (
+          {eventsLoading ? (
+            <p className='no-events'>Chargement des événements...</p>
+          ) : filteredEvents.length === 0 ? (
             <p className='no-events'>Aucun événement trouvé.</p>
           ) : (
             visibleEvents.map((event) => (
-              <article className='event-card' key={event.id}>
+              <Link
+                to={`/evenements/${event.id_evenement}`}
+                className='event-card'
+                key={event.id_evenement}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
                 <div className='event-image' />
-                <p className='event-date'>{event.date}</p>
-                <h3>{event.title}</h3>
-                <span className='event-tag'>{event.category}</span>
-                <p className='event-price'>{event.price}</p>
-                <button type='button' className='reserve-btn'>
-                  reserver
-                </button>
-              </article>
+                <p className='event-date'>
+                  {formatDate(event.date_debut)} — {event.lieu}
+                </p>
+                <h3>{event.titre}</h3>
+                {event.categorie && (
+                  <span className='event-tag'>{event.categorie}</span>
+                )}
+                <span className='reserve-btn'>Voir les détails →</span>
+              </Link>
             ))
           )}
         </div>

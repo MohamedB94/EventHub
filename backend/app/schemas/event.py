@@ -10,6 +10,7 @@ class EventCreate(BaseModel):
     date_fin: datetime
     lieu: str
     capacite_max: int
+    categorie: Optional[str] = None
     statut: bool
 
 
@@ -20,6 +21,7 @@ class EventUpdate(BaseModel):
     date_fin: Optional[datetime] = None
     lieu: Optional[str] = None
     capacite_max: Optional[int] = None
+    categorie: Optional[str] = None
     statut: Optional[bool] = None
 
 
@@ -31,6 +33,7 @@ class EventResponse(BaseModel):
     date_fin: datetime
     lieu: str
     capacite_max: int
+    categorie: Optional[str]
     statut: bool
     date_creation: datetime
 
