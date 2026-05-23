@@ -7,10 +7,8 @@ import api from "../../services/api";
 const navItems = [
   { label: "Tableau de bord", targetId: "dashboard-top" },
   { label: "Mes evenements", targetId: "mes-evenements" },
-  { label: "Billets & tarifs", targetId: "creation-evenement" },
-  { label: "Ventes", targetId: "mes-evenements" },
-  { label: "Statistiques", targetId: "dashboard-stats" },
-  { label: "Parametres", targetId: "creation-evenement" },
+  { label: "Creer un evenement", targetId: "creation-evenement" },
+  { label: "Statistiques", targetId: "statistiques" },
 ];
 
 const toDateTimeLocal = (isoDate) => {
@@ -39,6 +37,10 @@ export default function OrganisateurDashboard() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [activeSection, setActiveSection] = useState("dashboard-top");
+  const [eventFilter, setEventFilter] = useState("tous");
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [openMenu, setOpenMenu] = useState(null);
+  const [selectedStatEvent, setSelectedStatEvent] = useState(null);
 
   const goToSection = (targetId) => {
     const section = document.getElementById(targetId);
@@ -124,25 +126,51 @@ export default function OrganisateurDashboard() {
   const initials =
     `${user.prenom?.[0] || ""}${user.nom?.[0] || ""}`.toUpperCase();
 
-  const handleCreateEvent = async (e) => {
+  const handleEditClick = (event) => {
+    setEditingEvent(event);
+    setSubmitMessage("");
+    goToSection("creation-evenement");
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm("Supprimer cet événement ?")) return;
+    try {
+      await api.delete(`/events/${eventId}`);
+      setOpenMenu(null);
+      await fetchEvents();
+    } catch (error) {
+      alert(error?.response?.data?.detail || "Erreur lors de la suppression.");
+    }
+  };
+
+  const handleCreateEvent = async (e, publish) => {
     e.preventDefault();
     setSubmitMessage("");
     const formData = new FormData(e.target);
-    const event = Object.fromEntries(formData.entries());
+    const data = Object.fromEntries(formData.entries());
+
+    const payload = {
+      titre: data.titre,
+      description: data.description,
+      date_debut: data.date_debut,
+      date_fin: data.date_fin,
+      lieu: data.lieu,
+      capacite_max: parseInt(data.capacite, 10),
+      prix: parseFloat(String(data.prix).replace(",", ".")) || 0,
+      statut: publish,
+    };
 
     try {
       setSubmitLoading(true);
-      await api.post("/events/create", {
-        titre: event.titre,
-        description: event.description,
-        date_debut: event.date_debut,
-        date_fin: event.date_fin,
-        lieu: event.lieu,
-        capacite_max: parseInt(event.capacite, 10),
-        statut: event.statut === "publie",
-      });
+      if (editingEvent) {
+        await api.put(`/events/${editingEvent.id_evenement}`, payload);
+        setEditingEvent(null);
+        setSubmitMessage("Événement modifié avec succès.");
+      } else {
+        await api.post("/events/create", payload);
+        setSubmitMessage(publish ? "Événement publié avec succès." : "Brouillon sauvegardé.");
+      }
       e.target.reset();
-      setSubmitMessage("Evenement cree avec succes.");
       await fetchEvents();
     } catch (error) {
       setSubmitMessage(
@@ -223,7 +251,26 @@ export default function OrganisateurDashboard() {
           <section className='org-panel' id='mes-evenements'>
             <div className='org-panel-header'>
               <h2>Mes evenements</h2>
-              <span>{events.length} evenements</span>
+              <div className='org-event-filters'>
+                {["tous", "publie", "brouillon"].map((f) => (
+                  <button
+                    key={f}
+                    type='button'
+                    className={`org-filter-pill ${eventFilter === f ? "active" : ""}`}
+                    onClick={() => setEventFilter(f)}
+                  >
+                    {f === "tous" ? "Tous" : f === "publie" ? "Publiés" : "Brouillons"}
+                  </button>
+                ))}
+              </div>
+              <span>
+                {eventFilter === "tous"
+                  ? events.length
+                  : eventFilter === "publie"
+                  ? events.filter((e) => e.statut).length
+                  : events.filter((e) => !e.statut).length}{" "}
+                evenement(s)
+              </span>
             </div>
 
             <div className='org-table-wrapper'>
@@ -232,7 +279,8 @@ export default function OrganisateurDashboard() {
                   <tr>
                     <th>Evenement</th>
                     <th>Date</th>
-                    <th>Ventes</th>
+                    <th>Prix</th>
+                    <th>Capacite</th>
                     <th>Statut</th>
                     <th>Actions</th>
                   </tr>
@@ -255,11 +303,18 @@ export default function OrganisateurDashboard() {
                   )}
                   {!eventsLoading &&
                     !eventsError &&
-                    events.map((event) => (
+                    events
+                    .filter((e) =>
+                      eventFilter === "tous" ? true :
+                      eventFilter === "publie" ? e.statut :
+                      !e.statut
+                    )
+                    .map((event) => (
                       <tr key={event.id_evenement}>
                         <td>{event.titre}</td>
                         <td>{formatDate(event.date_debut)}</td>
-                        <td>{event.capacite_max} max</td>
+                        <td>{Number(event.prix) > 0 ? `${Number(event.prix).toFixed(2)} EUR` : "Gratuit"}</td>
+                        <td>{event.capacite_max}</td>
                         <td>
                           <span
                             className={`org-status ${event.statut ? "published" : "draft"}`}
@@ -272,17 +327,30 @@ export default function OrganisateurDashboard() {
                             <button
                               type='button'
                               className='org-secondary-button'
-                              disabled
+                              onClick={() => handleEditClick(event)}
                             >
                               Modifier
                             </button>
-                            <button
-                              type='button'
-                              className='org-icon-button'
-                              disabled
-                            >
-                              ...
-                            </button>
+                            <div className='org-menu-wrap'>
+                              <button
+                                type='button'
+                                className='org-icon-button'
+                                onClick={() => setOpenMenu(openMenu === event.id_evenement ? null : event.id_evenement)}
+                              >
+                                ···
+                              </button>
+                              {openMenu === event.id_evenement && (
+                                <div className='org-dropdown'>
+                                  <button
+                                    type='button'
+                                    className='org-dropdown-item danger'
+                                    onClick={() => handleDeleteEvent(event.id_evenement)}
+                                  >
+                                    Supprimer
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -294,10 +362,15 @@ export default function OrganisateurDashboard() {
 
           <section className='org-panel' id='creation-evenement'>
             <div className='org-panel-header'>
-              <h2>Creer un nouvel evenement</h2>
+              <h2>{editingEvent ? "Modifier l'événement" : "Creer un nouvel evenement"}</h2>
+              {editingEvent && (
+                <button type='button' className='org-secondary-button' onClick={() => setEditingEvent(null)}>
+                  Annuler la modification
+                </button>
+              )}
             </div>
 
-            <form className='org-form' onSubmit={handleCreateEvent}>
+            <form key={editingEvent?.id_evenement ?? "new"} className='org-form' onSubmit={(e) => e.preventDefault()}>
               <div className='org-field full'>
                 <label htmlFor='titre'>Titre de l'evenement</label>
                 <input
@@ -305,6 +378,7 @@ export default function OrganisateurDashboard() {
                   name='titre'
                   type='text'
                   placeholder='Ex : Festival de Jazz Paris 2025'
+                  defaultValue={editingEvent?.titre ?? ""}
                   required
                 />
               </div>
@@ -316,7 +390,7 @@ export default function OrganisateurDashboard() {
                     id='date-debut'
                     name='date_debut'
                     type='datetime-local'
-                    defaultValue={toDateTimeLocal(new Date().toISOString())}
+                    defaultValue={editingEvent ? toDateTimeLocal(editingEvent.date_debut) : toDateTimeLocal(new Date().toISOString())}
                     required
                   />
                 </div>
@@ -327,7 +401,7 @@ export default function OrganisateurDashboard() {
                     id='date-fin'
                     name='date_fin'
                     type='datetime-local'
-                    defaultValue={toDateTimeLocal(new Date().toISOString())}
+                    defaultValue={editingEvent ? toDateTimeLocal(editingEvent.date_fin) : toDateTimeLocal(new Date().toISOString())}
                     required
                   />
                 </div>
@@ -339,6 +413,7 @@ export default function OrganisateurDashboard() {
                     name='lieu'
                     type='text'
                     placeholder='Adresse complete'
+                    defaultValue={editingEvent?.lieu ?? ""}
                     required
                   />
                 </div>
@@ -352,25 +427,31 @@ export default function OrganisateurDashboard() {
                     min='1'
                     step='1'
                     placeholder='500'
+                    defaultValue={editingEvent?.capacite_max ?? ""}
                     required
                   />
                 </div>
 
                 <div className='org-field'>
+                  <label htmlFor='prix'>Prix (EUR)</label>
+                  <input
+                    id='prix'
+                    name='prix'
+                    type='number'
+                    min='0'
+                    step='0.01'
+                    placeholder='0.00'
+                    defaultValue={editingEvent ? Number(editingEvent.prix) : ""}
+                  />
+                </div>
+
+                <div className='org-field'>
                   <label htmlFor='categorie'>Categorie</label>
-                  <select id='categorie' defaultValue='Musique'>
+                  <select id='categorie' name='categorie' defaultValue='Musique'>
                     <option>Musique</option>
                     <option>Conference</option>
                     <option>Atelier</option>
                     <option>Sport</option>
-                  </select>
-                </div>
-
-                <div className='org-field'>
-                  <label htmlFor='statut'>Statut</label>
-                  <select id='statut' name='statut' defaultValue='brouillon'>
-                    <option value='brouillon'>Brouillon</option>
-                    <option value='publie'>Publie</option>
                   </select>
                 </div>
               </div>
@@ -385,17 +466,28 @@ export default function OrganisateurDashboard() {
                 />
               </div>
 
-              {submitMessage && <p>{submitMessage}</p>}
+              {submitMessage && (
+                <p className={submitMessage.startsWith("Erreur") ? "org-form-error" : "org-form-success"}>
+                  {submitMessage}
+                </p>
+              )}
 
               <div className='org-form-actions'>
                 <button
-                  type='submit'
+                  type='button'
                   className='org-primary-button submit'
                   disabled={submitLoading}
+                  onClick={(e) => handleCreateEvent({ preventDefault: () => {}, target: e.target.closest("form") }, true)}
                 >
-                  {submitLoading
-                    ? "Enregistrement..."
-                    : "Enregistrer l'evenement"}
+                  {submitLoading ? "Enregistrement..." : "Publier l'événement"}
+                </button>
+                <button
+                  type='button'
+                  className='org-secondary-button'
+                  disabled={submitLoading}
+                  onClick={(e) => handleCreateEvent({ preventDefault: () => {}, target: e.target.closest("form") }, false)}
+                >
+                  Sauvegarder en brouillon
                 </button>
                 <button type='reset' className='org-secondary-button'>
                   Annuler
@@ -403,6 +495,113 @@ export default function OrganisateurDashboard() {
               </div>
             </form>
           </section>
+
+          <section className='org-panel' id='statistiques'>
+            <div className='org-panel-header'>
+              <h2>Statistiques</h2>
+            </div>
+
+            {/* Vue globale */}
+            <div className='org-stats-detail'>
+              <div className='org-stat-row'>
+                <span>Événements publiés</span>
+                <strong>{events.filter(e => e.statut).length}</strong>
+              </div>
+              <div className='org-stat-row'>
+                <span>Événements en brouillon</span>
+                <strong>{events.filter(e => !e.statut).length}</strong>
+              </div>
+              <div className='org-stat-row'>
+                <span>Capacité totale (publiés)</span>
+                <strong>{events.filter(e => e.statut).reduce((s, e) => s + (e.capacite_max || 0), 0)} places</strong>
+              </div>
+              <div className='org-stat-row'>
+                <span>Revenu potentiel max.</span>
+                <strong>
+                  {events.filter(e => e.statut && Number(e.prix) > 0)
+                    .reduce((s, e) => s + Number(e.prix) * e.capacite_max, 0)
+                    .toFixed(2)} EUR
+                </strong>
+              </div>
+            </div>
+
+            {/* Sélecteur d'événement */}
+            <div className='org-stats-selector'>
+              <label htmlFor='stat-event-select'>Voir le détail d'un événement</label>
+              <select
+                id='stat-event-select'
+                value={selectedStatEvent?.id_evenement ?? ""}
+                onChange={(e) => {
+                  const found = events.find(ev => ev.id_evenement === parseInt(e.target.value));
+                  setSelectedStatEvent(found || null);
+                }}
+              >
+                <option value="">-- Choisir un événement --</option>
+                {events.map(e => (
+                  <option key={e.id_evenement} value={e.id_evenement}>
+                    {e.titre} {e.statut ? "✓" : "(brouillon)"}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Détail de l'événement sélectionné */}
+            {selectedStatEvent && (
+              <div className='org-stats-event-detail'>
+                <h3>{selectedStatEvent.titre}</h3>
+                <div className='org-stats-detail'>
+                  <div className='org-stat-row'>
+                    <span>Statut</span>
+                    <span className={`org-status ${selectedStatEvent.statut ? "published" : "draft"}`}>
+                      {selectedStatEvent.statut ? "Publié" : "Brouillon"}
+                    </span>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Date</span>
+                    <strong>{formatDate(selectedStatEvent.date_debut)} → {formatDate(selectedStatEvent.date_fin)}</strong>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Lieu</span>
+                    <strong>{selectedStatEvent.lieu}</strong>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Capacité max.</span>
+                    <strong>{selectedStatEvent.capacite_max} places</strong>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Prix</span>
+                    <strong>{Number(selectedStatEvent.prix) > 0 ? `${Number(selectedStatEvent.prix).toFixed(2)} EUR` : "Gratuit"}</strong>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Revenu potentiel max.</span>
+                    <strong>
+                      {Number(selectedStatEvent.prix) > 0
+                        ? `${(Number(selectedStatEvent.prix) * selectedStatEvent.capacite_max).toFixed(2)} EUR`
+                        : "—"}
+                    </strong>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Billets vendus</span>
+                    <strong className='org-muted-inline'>— (module Billets à venir)</strong>
+                  </div>
+                  <div className='org-stat-row'>
+                    <span>Revenu réalisé</span>
+                    <strong className='org-muted-inline'>— (module Billets à venir)</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!selectedStatEvent && events.length > 0 && (
+              <p className='org-muted' style={{padding: "0 18px 18px"}}>
+                Sélectionne un événement ci-dessus pour voir ses statistiques détaillées.
+              </p>
+            )}
+            {events.length === 0 && (
+              <p className='org-muted' style={{padding: "0 18px 18px"}}>Aucun événement créé.</p>
+            )}
+          </section>
+
         </section>
       </main>
     </div>

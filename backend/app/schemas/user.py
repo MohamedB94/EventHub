@@ -50,6 +50,7 @@ class ReponseUser(BaseModel):
     email: str
     role: str
     statut: bool
+    statut_validation: str = "approuve"
 
     class Config:
         from_attributes = True

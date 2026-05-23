@@ -1,5 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from datetime import datetime
+from pydantic import BaseModel
+
+class RefusBody(BaseModel):
+    message: str
 
 from app.core.security import decode_access_token
 from app.database import get_db
@@ -145,3 +150,74 @@ def admin_overview(
             "reserver": "Table Reserver non branchee dans cette version.",
         },
     }
+
+
+@router.get("/organisateurs/en-attente")
+def organisateurs_en_attente(
+    db: Session = Depends(get_db),
+    _admin: Utilisateur = Depends(get_current_admin),
+):
+    pending = (
+        db.query(Utilisateur)
+        .filter(Utilisateur.role == "organisateur", Utilisateur.statut_validation == "en_attente")
+        .order_by(Utilisateur.id_utilisateur.desc())
+        .all()
+    )
+    return [
+        {
+            "id_utilisateur": u.id_utilisateur,
+            "nom": u.nom,
+            "prenom": u.prenom,
+            "email": u.email,
+            "date_inscription": u.date_inscription,
+        }
+        for u in pending
+    ]
+
+
+@router.post("/organisateurs/{user_id}/approuver")
+def approuver_organisateur(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _admin: Utilisateur = Depends(get_current_admin),
+):
+    user = db.query(Utilisateur).filter(Utilisateur.id_utilisateur == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    user.statut_validation = "approuve"
+    user.message_refus = None
+    db.commit()
+    return {"message": f"{user.prenom} {user.nom} approuvé."}
+
+
+@router.post("/organisateurs/{user_id}/refuser")
+def refuser_organisateur(
+    user_id: int,
+    body: RefusBody,
+    db: Session = Depends(get_db),
+    _admin: Utilisateur = Depends(get_current_admin),
+):
+    user = db.query(Utilisateur).filter(Utilisateur.id_utilisateur == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    user.statut_validation = "refuse"
+    user.message_refus = body.message
+    db.commit()
+    return {"message": f"{user.prenom} {user.nom} refusé."}
+
+
+@router.delete("/cleanup-tokens")
+def cleanup_tokens(
+    db: Session = Depends(get_db),
+    _admin: Utilisateur = Depends(get_current_admin),
+):
+    deleted = (
+        db.query(RefreshToken)
+        .filter(
+            (RefreshToken.revoked == True) |
+            (RefreshToken.expire_at < datetime.utcnow())
+        )
+        .delete()
+    )
+    db.commit()
+    return {"deleted": deleted, "message": f"{deleted} token(s) supprimé(s)."}

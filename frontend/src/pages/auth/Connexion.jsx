@@ -39,6 +39,12 @@ export default function Connexion() {
         if (detail.retry_after) {
           return `${detail.message} (Reessayez dans ${detail.retry_after}s)`;
         }
+        if (detail.code === "en_attente") {
+          return "⏳ " + detail.message;
+        }
+        if (detail.code === "refuse") {
+          return "❌ Demande refusée : " + detail.message;
+        }
         return detail.message;
       }
       return "Une erreur est survenue";

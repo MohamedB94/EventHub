@@ -12,4 +12,6 @@ class Utilisateur(Base):
     role = Column(Text, nullable=False, default="participant")
     date_inscription = Column(Date, nullable=False)
     statut = Column(Boolean, default=True)
+    statut_validation = Column(String(20), nullable=False, default="approuve", server_default="approuve")
+    message_refus = Column(Text, nullable=True)
     

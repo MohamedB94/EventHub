@@ -43,10 +43,13 @@ const events = [
   },
 ];
 
+const VISIBLE = 4;
+
 export default function Home() {
   const { user, logout } = useAuth();
   const [activeCategory, setActiveCategory] = useState("Tous");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
   const fullName = [user?.prenom, user?.nom].filter(Boolean).join(" ").trim();
 
   const filteredEvents = events.filter((e) => {
@@ -54,6 +57,14 @@ export default function Home() {
     const matchSearch = e.title.toLowerCase().includes(search.toLowerCase().trim());
     return matchCategory && matchSearch;
   });
+
+  const totalPages = Math.ceil(filteredEvents.length / VISIBLE);
+  const visibleEvents = filteredEvents.slice(page * VISIBLE, page * VISIBLE + VISIBLE);
+
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setPage(0);
+  };
 
   return (
     <div className='home-page'>
@@ -73,6 +84,16 @@ export default function Home() {
                 <span className='welcome-user'>
                   Bonjour {fullName || user.email}
                 </span>
+                {(user.role === "admin" || user.role === "administrateur") && (
+                  <Link to='/admin' className='btn-nav btn-nav-outline'>
+                    Dashboard Admin
+                  </Link>
+                )}
+                {user.role === "organisateur" && (
+                  <Link to='/organisateur' className='btn-nav btn-nav-outline'>
+                    Mon espace
+                  </Link>
+                )}
                 <button
                   type='button'
                   className='btn-nav btn-nav-logout'
@@ -115,20 +136,45 @@ export default function Home() {
               type='button'
               key={category}
               className={`category-pill ${activeCategory === category ? "active" : ""}`}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => handleCategoryChange(category)}
             >
               {category}
             </button>
           ))}
         </div>
 
-        <h2>Evenements a la une</h2>
+        <div className='events-header'>
+          <h2>Evenements a la une</h2>
+          {totalPages > 1 && (
+            <div className='carousel-arrows'>
+              <button
+                type='button'
+                className='carousel-arrow'
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 0}
+                aria-label='Précédent'
+              >
+                &#8592;
+              </button>
+              <span className='carousel-count'>{page + 1} / {totalPages}</span>
+              <button
+                type='button'
+                className='carousel-arrow'
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= totalPages - 1}
+                aria-label='Suivant'
+              >
+                &#8594;
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className='event-grid'>
           {filteredEvents.length === 0 ? (
             <p className='no-events'>Aucun événement trouvé.</p>
           ) : (
-            filteredEvents.map((event) => (
+            visibleEvents.map((event) => (
               <article className='event-card' key={event.id}>
                 <div className='event-image' />
                 <p className='event-date'>{event.date}</p>

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -13,6 +13,7 @@ class Evenement(Base):
     date_fin = Column(DateTime, nullable=False)
     lieu = Column(String(50), nullable=False)
     capacite_max = Column(Integer, nullable=False)
+    prix = Column(Numeric(10, 2), nullable=False, default=0, server_default="0")
     statut = Column(Boolean, default=False)
     date_creation = Column(DateTime, default=datetime.utcnow)
     id_utilisateur = Column(Integer, ForeignKey("utilisateur.id_utilisateur"), nullable=False)

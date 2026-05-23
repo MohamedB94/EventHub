@@ -64,9 +64,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await api.post("/auth/logout");
-    clearAccessToken();
-    setUser(null);
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // on nettoie localement même si le serveur est injoignable
+    } finally {
+      clearAccessToken();
+      setUser(null);
+    }
   };
 
   return (

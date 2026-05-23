@@ -179,6 +179,7 @@ def register(data: UserRegister, response: Response, db: Session = Depends(get_d
         role=data.role,
         date_inscription=date.today(),
         statut=True,
+        statut_validation="en_attente" if data.role == "organisateur" else "approuve",
     )
     db.add(user)
     db.commit()
@@ -255,6 +256,18 @@ def login(data: UserLogin, request: Request, response: Response, db: Session = D
 
     if not user.statut:
         raise HTTPException(status_code=403, detail="Compte désactivé")
+
+    if user.role == "organisateur":
+        if user.statut_validation == "en_attente":
+            raise HTTPException(
+                status_code=403,
+                detail={"code": "en_attente", "message": "Votre compte est en attente de validation par un administrateur."},
+            )
+        if user.statut_validation == "refuse":
+            raise HTTPException(
+                status_code=403,
+                detail={"code": "refuse", "message": user.message_refus or "Votre demande a été refusée par l'administrateur."},
+            )
 
     _clear_login_attempts(db, key)
 

@@ -16,6 +16,10 @@ export default function AdminDashboard() {
   const [overview, setOverview] = useState(null);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewError, setOverviewError] = useState("");
+  const [cleanupMsg, setCleanupMsg] = useState("");
+  const [pending, setPending] = useState([]);
+  const [refusMessages, setRefusMessages] = useState({});
+  const [actionMsg, setActionMsg] = useState("");
   const normalizedRole = String(user?.role || "")
     .trim()
     .toLowerCase();
@@ -38,9 +42,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadPending = async () => {
+    try {
+      const res = await api.get("/admin/organisateurs/en-attente");
+      setPending(res.data);
+    } catch {}
+  };
+
+  const handleApprouver = async (id) => {
+    await api.post(`/admin/organisateurs/${id}/approuver`);
+    setActionMsg("Organisateur approuvé.");
+    loadPending();
+  };
+
+  const handleRefuser = async (id) => {
+    const msg = refusMessages[id] || "";
+    if (!msg.trim()) { setActionMsg("Écris un message de refus."); return; }
+    await api.post(`/admin/organisateurs/${id}/refuser`, { message: msg });
+    setActionMsg("Organisateur refusé.");
+    loadPending();
+  };
+
   useEffect(() => {
     if (isAdmin) {
       loadOverview();
+      loadPending();
     }
   }, [isAdmin]);
 
@@ -121,6 +147,64 @@ export default function AdminDashboard() {
           </section>
 
           <section className='admin-sections'>
+
+            <article className='admin-panel admin-panel-alert'>
+              <div className='admin-panel-header'>
+                <h2>
+                  Organisateurs en attente
+                  {pending.length > 0 && (
+                    <span className='admin-badge'>{pending.length}</span>
+                  )}
+                </h2>
+              </div>
+              {actionMsg && <p className='admin-cleanup-msg'>{actionMsg}</p>}
+              {pending.length === 0 ? (
+                <p className='admin-muted'>Aucun organisateur en attente de validation.</p>
+              ) : (
+                <div className='admin-table-wrap'>
+                  <table className='admin-table'>
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Date inscription</th>
+                        <th>Message de refus</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pending.map((u) => (
+                        <tr key={u.id_utilisateur}>
+                          <td>{u.prenom} {u.nom}</td>
+                          <td>{u.email}</td>
+                          <td>{formatDate(u.date_inscription)}</td>
+                          <td>
+                            <input
+                              type='text'
+                              className='admin-refus-input'
+                              placeholder='Message si refus...'
+                              value={refusMessages[u.id_utilisateur] || ""}
+                              onChange={(e) => setRefusMessages(prev => ({ ...prev, [u.id_utilisateur]: e.target.value }))}
+                            />
+                          </td>
+                          <td>
+                            <div className='admin-actions-row'>
+                              <button type='button' className='admin-btn admin-btn-approve' onClick={() => handleApprouver(u.id_utilisateur)}>
+                                Approuver
+                              </button>
+                              <button type='button' className='admin-btn admin-btn-danger' onClick={() => handleRefuser(u.id_utilisateur)}>
+                                Refuser
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </article>
+
             <article className='admin-panel'>
               <h2>Utilisateurs</h2>
               <div className='admin-table-wrap'>
@@ -243,7 +327,26 @@ export default function AdminDashboard() {
             </article>
 
             <article className='admin-panel'>
-              <h2>Refresh Tokens</h2>
+              <div className='admin-panel-header'>
+                <h2>Refresh Tokens</h2>
+                <button
+                  type='button'
+                  className='admin-btn admin-btn-danger'
+                  onClick={async () => {
+                    setCleanupMsg("");
+                    try {
+                      const res = await api.delete("/admin/cleanup-tokens");
+                      setCleanupMsg(res.data.message);
+                      loadOverview();
+                    } catch {
+                      setCleanupMsg("Erreur lors du nettoyage.");
+                    }
+                  }}
+                >
+                  Nettoyer les tokens révoqués
+                </button>
+              </div>
+              {cleanupMsg && <p className='admin-cleanup-msg'>{cleanupMsg}</p>}
               <div className='admin-table-wrap'>
                 <table className='admin-table'>
                   <thead>

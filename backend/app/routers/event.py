@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from app.database import get_db
 from app.models.event import Evenement
-from app.schemas.event import EventCreate, EventResponse
+from app.schemas.event import EventCreate, EventUpdate, EventResponse
 from app.models.user import Utilisateur
 from app.core.security import decode_access_token
 
@@ -60,6 +60,7 @@ def create_event(
         date_fin=event.date_fin,
         lieu=event.lieu,
         capacite_max=event.capacite_max,
+        prix=event.prix,
         statut=event.statut,
         date_creation=datetime.utcnow(),
         id_utilisateur=user.id_utilisateur
@@ -70,3 +71,42 @@ def create_event(
     db.refresh(new_event)
 
     return new_event
+
+
+@router.put("/{event_id}", response_model=EventResponse)
+def update_event(
+    event_id: int,
+    data: EventUpdate,
+    db: Session = Depends(get_db),
+    user: Utilisateur = Depends(get_current_user),
+):
+    event = db.query(Evenement).filter(
+        Evenement.id_evenement == event_id,
+        Evenement.id_utilisateur == user.id_utilisateur,
+    ).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Evenement introuvable")
+
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(event, field, value)
+
+    db.commit()
+    db.refresh(event)
+    return event
+
+
+@router.delete("/{event_id}", status_code=204)
+def delete_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    user: Utilisateur = Depends(get_current_user),
+):
+    event = db.query(Evenement).filter(
+        Evenement.id_evenement == event_id,
+        Evenement.id_utilisateur == user.id_utilisateur,
+    ).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Evenement introuvable")
+
+    db.delete(event)
+    db.commit()
