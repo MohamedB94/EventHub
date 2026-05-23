@@ -8,9 +8,11 @@ class RefusBody(BaseModel):
 
 from app.core.security import decode_access_token
 from app.database import get_db
+from app.models.billet import Billet
 from app.models.bruteforce import BruteForce
 from app.models.event import Evenement
 from app.models.refresh_token import RefreshToken
+from app.models.reserver import Reserver
 from app.models.user import Utilisateur
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -50,6 +52,8 @@ def admin_overview(
     total_events = db.query(Evenement).count()
     total_bruteforce = db.query(BruteForce).count()
     total_refresh_tokens = db.query(RefreshToken).count()
+    total_billets = db.query(Billet).count()
+    total_reservations = db.query(Reserver).count()
 
     active_users = db.query(Utilisateur).filter(Utilisateur.statut == True).count()
     active_events = db.query(Evenement).filter(Evenement.statut == True).count()
@@ -95,8 +99,8 @@ def admin_overview(
             "blocked_accounts": blocked_accounts,
             "total_refresh_tokens": total_refresh_tokens,
             "active_refresh_tokens": active_refresh_tokens,
-            "total_billets": 0,
-            "total_reservations": 0,
+            "total_billets": total_billets,
+            "total_reservations": total_reservations,
         },
         "users": [
             {

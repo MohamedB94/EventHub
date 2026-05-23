@@ -60,7 +60,6 @@ def create_event(
         date_fin=event.date_fin,
         lieu=event.lieu,
         capacite_max=event.capacite_max,
-        prix=event.prix,
         statut=event.statut,
         date_creation=datetime.utcnow(),
         id_utilisateur=user.id_utilisateur
